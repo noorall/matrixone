@@ -1629,6 +1629,10 @@ func buildPlan(requestCtx context.Context, ses *Session, ctx plan2.CompilerConte
 		v2.TxnStatementBuildPlanDurationHistogram.Observe(time.Since(start).Seconds())
 	}()
 
+	if strings.Contains(ses.sql, "test_vw") {
+		test := 1
+		test++
+	}
 	stats := statistic.StatsInfoFromContext(requestCtx)
 	stats.PlanStart()
 	defer stats.PlanEnd()

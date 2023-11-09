@@ -83,7 +83,7 @@ func (s *ItemSyncer) GetCheckWriteHook() table.CheckWriteHook {
 // Wait cooperate with NeedSyncWrite and NeedSyncWrite
 func (s *ItemSyncer) Wait() {
 	select {
-	case t := <-time.After(time.Minute):
+	case t := <-time.After(time.Hour):
 		logutil.Warn(fmt.Sprintf("LogSyncer wait timeout at: %s", table.Time2DatetimeString(t)), logutil.NoReportFiled())
 	case <-s.ch:
 		logutil.Info("Wait signal done.")

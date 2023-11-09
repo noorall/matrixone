@@ -51,7 +51,7 @@ func genViewTableDef(ctx CompilerContext, stmt *tree.Select) (*plan.TableDef, er
 			return nil, err
 		}
 	}
-
+	// 这里已经拿到了生成的cols
 	query := stmtPlan.GetQuery()
 	cols := make([]*plan.ColDef, len(query.Nodes[query.Steps[len(query.Steps)-1]].ProjectList))
 	for idx, expr := range query.Nodes[query.Steps[len(query.Steps)-1]].ProjectList {
