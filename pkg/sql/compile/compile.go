@@ -208,7 +208,10 @@ func (c *Compile) Compile(ctx context.Context, pn *plan.Plan, u any, fill func(a
 			err = moerr.ConvertPanicError(ctx, e)
 		}
 	}()
-
+	if strings.Contains(c.uid, "dump") {
+		tets := 1
+		tets++
+	}
 	// with values
 	c.proc.Ctx = perfcounter.WithCounterSet(c.proc.Ctx, &c.counterSet)
 	c.ctx = c.proc.Ctx
@@ -363,7 +366,7 @@ func (c *Compile) Run(_ uint64) (*util2.RunResult, error) {
 		v2.TxnStatementExecuteDurationHistogram.Observe(time.Since(start).Seconds())
 	}()
 
-	if strings.Contains(c.sql, "test_") && strings.Contains(c.uid, "dump") {
+	if strings.Contains(c.uid, "dump") {
 		fmt.Printf("plan = %s\n", explain.DebugPlan(c.pn))
 		fmt.Printf("scopes = %s\n", DebugShowScopes(c.scope))
 
