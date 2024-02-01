@@ -118,6 +118,10 @@ const (
 	LZ4        = "lz4"
 )
 
+const (
+	TAR = "tar"
+)
+
 // load data fotmat
 const (
 	CSV      = "csv"

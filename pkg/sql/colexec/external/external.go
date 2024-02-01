@@ -15,6 +15,7 @@
 package external
 
 import (
+	"archive/tar"
 	"bufio"
 	"bytes"
 	"compress/bzip2"
@@ -445,6 +446,33 @@ func getUnCompressReader(param *tree.ExternParam, filepath string, r io.ReadClos
 	}
 }
 
+func getUnArchivedReader(param *tree.ExternParam, filepath string, r io.ReadCloser) (io.ReadCloser, error) {
+	if param.CompressType != "" && param.CompressType != tree.AUTO {
+		return r, nil
+	}
+	index := strings.LastIndex(filepath, ".")
+	if index == -1 {
+		return r, nil
+	}
+	head := string([]byte(filepath)[:index])
+	index = strings.LastIndex(head, ".")
+	if index == -1 {
+		return r, nil
+	}
+	tail := string([]byte(head)[index+1:])
+	switch strings.ToLower(tail) {
+	case tree.TAR:
+		tarReader := tar.NewReader(r)
+		_, err := tarReader.Next()
+		if err != nil {
+			return r, err
+		}
+		return io.NopCloser(tarReader), nil
+	default:
+		return r, nil
+	}
+}
+
 func makeType(typ *plan.Type, flag bool) types.Type {
 	if flag {
 		return types.New(types.T_varchar, 0, 0)
@@ -535,6 +563,10 @@ func getMOCSVReader(param *ExternalParam, proc *process.Process) (*ParseLineHand
 		return nil, err
 	}
 	param.reader, err = getUnCompressReader(param.Extern, param.Fileparam.Filepath, param.reader)
+	if err != nil {
+		return nil, err
+	}
+	param.reader, err = getUnArchivedReader(param.Extern, param.Fileparam.Filepath, param.reader)
 	if err != nil {
 		return nil, err
 	}
