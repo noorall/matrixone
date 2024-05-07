@@ -424,6 +424,9 @@ func getTailSize(param *tree.ExternParam, cols []*plan.ColDef, r io.ReadCloser) 
 	bufR := bufio.NewReader(r)
 	// keep as before
 	line, err := bufR.ReadString('\n')
+	if err != nil {
+		return 0, err
+	}
 	skipCount := int64(len(line))
 	csvReader, err := newReaderWithParam(&ExternalParam{
 		ExParamConst: ExParamConst{Extern: param},
