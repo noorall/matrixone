@@ -395,7 +395,7 @@ func ReadFileOffset(param *tree.ExternParam, mcpu int, fileSize int64, cols []*p
 
 	for i := 1; i < mcpu; i++ {
 		vec.Entries[0].Offset = int64(i) * batchSize
-		if vec.Entries[0].Offset <= offset[i-1] {
+		if vec.Entries[0].Offset <= offset[len(offset)-1] {
 			continue
 		}
 		if err = fs.Read(param.Ctx, &vec); err != nil {
@@ -438,7 +438,7 @@ func getTailSize(param *tree.ExternParam, cols []*plan.ColDef, r io.ReadCloser) 
 		if err != nil {
 			return 0, err
 		}
-		if len(fields) != len(cols) {
+		if len(fields) < len(cols) {
 			continue
 		}
 		if isLegalLine(param, cols, fields) {
