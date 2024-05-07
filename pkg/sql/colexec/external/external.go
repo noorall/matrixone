@@ -394,16 +394,16 @@ func ReadFileOffset(param *tree.ExternParam, mcpu int, fileSize int64, cols []*p
 	offset = append(offset, 0)
 
 	for i := 1; i < mcpu; i++ {
-		vec.Entries[0].Offset = offset[i-1] + batchSize
-		if vec.Entries[0].Offset >= fileSize {
-			break
+		vec.Entries[0].Offset = int64(i) * batchSize
+		if vec.Entries[0].Offset <= offset[i-1] {
+			continue
 		}
 		if err = fs.Read(param.Ctx, &vec); err != nil {
 			return nil, err
 		}
 		tailSize, err := getTailSize(param, visibleCols, r)
 		if err != nil {
-			break
+			continue
 		}
 		offset = append(offset, vec.Entries[0].Offset+tailSize)
 	}
@@ -422,28 +422,9 @@ func ReadFileOffset(param *tree.ExternParam, mcpu int, fileSize int64, cols []*p
 
 func getTailSize(param *tree.ExternParam, cols []*plan.ColDef, r io.ReadCloser) (int64, error) {
 	bufR := bufio.NewReader(r)
-	// ensure the first character is not field quote symbol
-	quoteByte := byte('"')
-	if param.Tail.Fields != nil {
-		if enclosed := param.Tail.Fields.EnclosedBy; enclosed != nil && enclosed.Value != 0 {
-			quoteByte = enclosed.Value
-		}
-	}
-	skipCount := int64(0)
-	for {
-		ch, err := bufR.ReadByte()
-		if err != nil {
-			return 0, err
-		}
-		if ch != quoteByte {
-			err = bufR.UnreadByte()
-			if err != nil {
-				return 0, err
-			}
-			break
-		}
-		skipCount++
-	}
+	// keep as before
+	line, err := bufR.ReadString('\n')
+	skipCount := int64(len(line))
 	csvReader, err := newReaderWithParam(&ExternalParam{
 		ExParamConst: ExParamConst{Extern: param},
 		ExParam:      ExParam{reader: io.NopCloser(bufR)},
